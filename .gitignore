@@ -20,6 +20,9 @@ data/processed/*
 reports/generated/
 *.log
 
+# Keep interview and KPI documentation local, outside Git tracking.
+docs/
+
 # OS/editor temporary files.
 .DS_Store
 Thumbs.db

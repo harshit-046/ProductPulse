@@ -1,0 +1,26 @@
+# Local credentials; keep the shareable template.
+.env
+.env.*
+!.env.example
+
+# Local Python environments and generated caches.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Source dataset and reproducible cleaning outputs (download/generate locally).
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Generated query exports and logs; documentation stays tracked.
+reports/generated/
+*.log
+
+# OS/editor temporary files.
+.DS_Store
+Thumbs.db
+.vscode/

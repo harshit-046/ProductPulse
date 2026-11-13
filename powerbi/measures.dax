@@ -1,0 +1,27 @@
+-- Base measures assume a single events table and a related Calendar table.
+Total Users = DISTINCTCOUNT(events[user_id])
+Active Users = DISTINCTCOUNT(events[user_id])
+Total Sessions = DISTINCTCOUNT(events[user_session])
+Total Views = CALCULATE(COUNTROWS(events), events[event_type] = "view")
+Total Cart Events = CALCULATE(COUNTROWS(events), events[event_type] = "cart")
+Total Purchase Events = CALCULATE(COUNTROWS(events), events[event_type] = "purchase")
+Total Purchase Value = CALCULATE(SUM(events[price]), events[event_type] = "purchase")
+Purchase Conversion Rate = DIVIDE([Purchase Sessions], [View Sessions])
+Cart Abandonment Rate = DIVIDE([Cart Sessions] - [Cart Sessions with Later Purchase], [Cart Sessions])
+DAU = DISTINCTCOUNT(events[user_id])
+-- Full calendar month containing the latest date in the current date selection.
+MAU =
+VAR AnchorDate = MAX('Calendar'[Date])
+VAR MonthStart = DATE(YEAR(AnchorDate), MONTH(AnchorDate), 1)
+VAR MonthEnd = EOMONTH(AnchorDate, 0)
+RETURN CALCULATE(DISTINCTCOUNT(events[user_id]), REMOVEFILTERS('Calendar'), DATESBETWEEN('Calendar'[Date], MonthStart, MonthEnd))
+Rolling Seven-Day Average = AVERAGEX(DATESINPERIOD('Calendar'[Date], MAX('Calendar'[Date]), -6, DAY), [DAU])
+View Sessions = CALCULATE(DISTINCTCOUNT(events[user_session]), events[event_type] = "view", NOT ISBLANK(events[user_session]))
+Cart Sessions = CALCULATE(DISTINCTCOUNT(events[user_session]), events[event_type] = "cart", NOT ISBLANK(events[user_session]))
+Purchase Sessions = CALCULATE(DISTINCTCOUNT(events[user_session]), events[event_type] = "purchase", NOT ISBLANK(events[user_session]))
+Cart Sessions with Later Purchase =
+VAR CartSessionIds = CALCULATETABLE(VALUES(events[user_session]), events[event_type] = "cart", NOT ISBLANK(events[user_session]))
+RETURN COUNTROWS(FILTER(CartSessionIds,
+    VAR FirstCart = CALCULATE(MIN(events[event_time]), events[event_type] = "cart")
+    RETURN CALCULATE(COUNTROWS(events), events[event_type] = "purchase", events[event_time] > FirstCart) > 0
+))
